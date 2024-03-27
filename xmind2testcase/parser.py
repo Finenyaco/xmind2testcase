@@ -136,7 +136,8 @@ def parse_a_testcase(case_dict, parent):
 
     summary = gen_testcase_summary(topics)
     testcase.summary = summary if summary else testcase.name
-    testcase.execution_type = get_execution_type(topics)
+    # testcase.execution_type = get_execution_type(topics)
+    testcase.execution_type = get_original_execution_type(topics)
     testcase.importance = get_priority(case_dict) or 2
 
     step_dict_list = case_dict.get('topics', [])
@@ -174,6 +175,11 @@ def get_execution_type(topics):
             break
     return exe_type
 
+def get_original_execution_type(topics):
+    labels = [topic.get('label', '') for topic in topics]
+    labels = filter_empty_or_ignore_element(labels)
+    return ' , '.join(labels)
+
 
 def get_priority(case_dict):
     """Get the topic's priority（equivalent to the importance of the testcase)"""
@@ -187,14 +193,11 @@ def gen_testcase_title(topics):
     """Link all topic's title as testcase title"""
     titles = [topic['title'] for topic in topics]
     titles = filter_empty_or_ignore_element(titles)
-
     # when separator is not blank, will add space around separator, e.g. '/' will be changed to ' / '
     separator = config['sep']
     if separator != ' ':
-        separator = ' {} '.format(separator)
-
-    return separator.join(titles)
-
+        separator = '{}'.format(separator)
+    return  separator.join(titles)
 
 def gen_testcase_preconditions(topics):
     notes = [topic['note'] for topic in topics]
