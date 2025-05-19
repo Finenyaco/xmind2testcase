@@ -38,6 +38,7 @@ def xmind_to_zentao_csv_file(xmind_file):
 
     return zentao_file
 
+
 def gen_a_testcase_row(testcase_dict):
     # case_module = '/' + gen_case_module(testcase_dict['suite'])
     case_names = str(testcase_dict['name']).split("#")
@@ -47,7 +48,7 @@ def gen_a_testcase_row(testcase_dict):
     case_module = case_module.replace('>', '').strip()
     # if sub_module:
     #     case_module = '/' + gen_case_module(testcase_dict['suite'])+ '/' + '/'.join(sub_module)
-    case_title = case_names[-1].replace('>','',1).strip()
+    case_title = format_case_title(case_names[-1])
     # case_title = testcase_dict['name']
     case_precontion = testcase_dict['preconditions']
     case_step, case_expected_result = gen_case_step_and_expected_result(testcase_dict['steps'])
@@ -57,7 +58,8 @@ def gen_a_testcase_row(testcase_dict):
     case_type = testcase_dict['execution_type']
     case_type = case_type.replace('，', ',')
     # case_apply_phase = '迭代测试'
-    row = [case_module, case_title, case_type, case_priority, case_precontion, case_step, case_expected_result]
+    summary = testcase_dict['summary']
+    row = [case_module, case_title, case_type, case_priority, case_precontion, case_step, case_expected_result, summary]
     return row
 
 
@@ -75,10 +77,19 @@ def gen_case_step_and_expected_result(steps):
     case_expected_result = ''
 
     for step_dict in steps:
-        case_step += str(step_dict['step_number']) + '. ' + step_dict['actions'].replace('\n', '').strip() + '\n'
-        case_expected_result += str(step_dict['step_number']) + '. ' + \
-            step_dict['expectedresults'].replace('\n', '').strip() + '\n' \
-            if step_dict.get('expectedresults', '') else ''
+        # 第一行输入是不用添加换行符，其他行添加时需要先换行再输入
+        if case_step == '':
+            case_step += str(step_dict['step_number']) + '. ' + step_dict['actions'].replace('\n', '').strip()
+        else:
+            case_step += '\n' + str(step_dict['step_number']) + '. ' + step_dict['actions'].replace('\n', '').strip()
+        if case_expected_result == '':
+            case_expected_result += str(step_dict['step_number']) + '. ' + \
+                step_dict['expectedresults'].replace('\n', '').strip() \
+                if step_dict.get('expectedresults', '') else ''
+        else:
+            case_expected_result += '\n' + str(step_dict['step_number']) + '. ' + \
+                                    step_dict['expectedresults'].replace('\n', '').strip() \
+                if step_dict.get('expectedresults', '') else ''
 
     return case_step, case_expected_result
 
@@ -98,8 +109,17 @@ def gen_case_type(case_type):
     else:
         return '手动'
 
+def format_case_title(case_title):
+    case_title = case_title.strip()
+    if case_title.startswith('>'):
+        case_title = case_title[1:]
+    else:
+        case_title = case_title
+    return case_title
+
 
 if __name__ == '__main__':
-    xmind_file = '../docs/zentao_testcase_template.xmind'
+    xmind_file = '/Users/sophia/seal/gpustack-test/测试用例模板规则.xmind'
+    # xmind_file = '/Users/sophia/seal/gpustack-test/gpustack-testcases.xmind'
     zentao_csv_file = xmind_to_zentao_csv_file(xmind_file)
     print('Conver the xmind file to a zentao csv file succssfully: %s', zentao_csv_file)

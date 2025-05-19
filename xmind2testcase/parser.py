@@ -132,10 +132,11 @@ def parse_a_testcase(case_dict, parent):
     testcase.name = gen_testcase_title(topics)
 
     preconditions = gen_testcase_preconditions(topics)
-    testcase.preconditions = preconditions if preconditions else '无'
+    testcase.preconditions = preconditions if preconditions else ''
 
     summary = gen_testcase_summary(topics)
-    testcase.summary = summary if summary else testcase.name
+    testcase.summary = summary if summary else ''
+
     # testcase.execution_type = get_execution_type(topics)
     testcase.execution_type = get_original_execution_type(topics)
     testcase.importance = get_priority(case_dict) or 2
@@ -198,6 +199,7 @@ def gen_testcase_title(topics):
     if separator != ' ':
         separator = '{}'.format(separator)
     return  separator.join(titles)
+
 
 def gen_testcase_preconditions(topics):
     notes = [topic['note'] for topic in topics]
